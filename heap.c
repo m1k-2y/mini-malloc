@@ -1,5 +1,6 @@
 #include <sys/mman.h>
 #include <stddef.h>
+#include "heap.h"
 
 static void *heap_start;
 
@@ -12,4 +13,8 @@ int mem_init(size_t size) {
     }
 
     return 0;
+}
+
+void *mem_heap_lo(void) {
+    return heap_start;
 }
