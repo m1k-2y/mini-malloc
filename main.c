@@ -22,14 +22,21 @@ int main(void) {
 
     printf("b -> a = %ld\n", (char *)b - (char *)a);
 
-    void *a_header = (char *)a - HEADER_SIZE;
-    printf("*a_header = %zu\n", *(size_t *)a_header);
+    void *a_header = hdrp(a);
+    printf("size = %zu\n", get_size(a_header));
+    printf("alloc = %zu\n", get_alloc(a_header));
 
     *(int *)a = 111;
     *(int *)b = 222;
 
     printf("*a = %d\n", *(int *)a);
     printf("*b = %d\n", *(int *)b);
+
+    printf("before free alloc = %zu\n", get_alloc(hdrp(a)));
+    mm_free(a);
+    printf("after free alloc = %zu\n", get_alloc(hdrp(a)));
+
+    printf("after free alloc *a = %d\n", *(int *)a);
 
     return 0;
 }
