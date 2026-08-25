@@ -1,0 +1,5 @@
+#define HEADER_SIZE 8
+#define ALIGNMENT 16
+#define HEAP_SIZE 4096
+#define ALIGN(size) (((size) + (ALIGNMENT - 1)) / ALIGNMENT) * ALIGNMENT
+#define PADDING (ALIGN(HEADER_SIZE) - HEADER_SIZE)
