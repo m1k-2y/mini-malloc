@@ -1,20 +1,24 @@
 #include <sys/mman.h>
 #include <stddef.h>
-#include "heap.h"
 
-static void *heap_start;
+void *heap_start;
 
-int mem_init(size_t size) {
+void *allocate_heap_region(size_t size) {
+    
+    void *p = mmap(
+        NULL,
+        size,
+        PROT_READ | PROT_WRITE,
+        MAP_PRIVATE | MAP_ANONYMOUS,
+        -1,
+        0
+    );
 
-    heap_start = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-
-    if (heap_start == MAP_FAILED) {
-        return -1;
+    if (p == MAP_FAILED) {
+        return NULL;
     }
 
-    return 0;
-}
-
-void *mem_heap_lo(void) {
-    return heap_start;
+    heap_start = p;
+    
+    return p;
 }

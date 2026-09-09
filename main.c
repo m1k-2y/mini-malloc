@@ -1,42 +1,36 @@
-#include "mm.h"
-#include "mm_internal.h"
 #include <stdio.h>
+#include <stddef.h>
+#include "heap.h"
+#include "header.h"
+#include "binary_compute.h"
 
 int main(void) {
 
-    int result = mm_init();
+    size_t size;
+    printf("How much heap size: ");
+    scanf("%zu", &size);
 
-    if (result == -1) {
-        return -1;
+    void *p = allocate_heap_region(size);
+
+    if (p == NULL) {
+        return 1;
     }
 
-    void *a = mm_malloc(100);
-    void *b = mm_malloc(50);
-    void *c = mm_malloc(7);
-    void *d = mm_malloc(1000);
+    printf("%p\n", p);
 
-    printf("a = %p\n", a);
-    printf("b = %p\n", b);
-    printf("c = %p\n", c);
-    printf("d = %p\n", d);
+    struct BlockHeader *header1 = init_header(p, size);
 
-    printf("b -> a = %ld\n", (char *)b - (char *)a);
+    print_binary(header1 -> size_and_alloc);
 
-    void *a_header = hdrp(a);
-    printf("size = %zu\n", get_size(a_header));
-    printf("alloc = %zu\n", get_alloc(a_header));
+    while (1) {
+        size_t malloc_size;
+        printf("How much Bytes: ");
+        scanf("%zu", &malloc_size);
 
-    *(int *)a = 111;
-    *(int *)b = 222;
+        void * payload = request_block(p, malloc_size, size);
 
-    printf("*a = %d\n", *(int *)a);
-    printf("*b = %d\n", *(int *)b);
-
-    printf("before free alloc = %zu\n", get_alloc(hdrp(a)));
-    mm_free(a);
-    printf("after free alloc = %zu\n", get_alloc(hdrp(a)));
-
-    printf("after free alloc *a = %d\n", *(int *)a);
-
+        printf("%p\n", payload);
+    }
+    
     return 0;
 }
