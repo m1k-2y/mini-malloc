@@ -15,6 +15,24 @@ size_t alignment(size_t block_size) {
     }
 }
 
+int split_block(BlockHeader *header, size_t required_size) {
+
+    size_t original_block = get_block_size(header);
+    size_t new_free_block_size = original_block - required_size;
+
+    BlockHeader *new_free_block = (BlockHeader *)((char *)header + required_size);
+
+    if (new_free_block_size >= 32) {
+        init_block_header(new_free_block, new_free_block_size);
+
+        return 1;
+    }
+
+    else {
+        return 0;
+    }
+}
+
 BlockHeader *find_free_block(size_t required_size) {
     
     BlockHeader *header = heap_start;
@@ -46,7 +64,9 @@ void *mini_malloc(size_t size) {
         return NULL;
     }
 
-    init_block_header(new_malloc_header, required_size);
+    if (split_block(new_malloc_header, required_size) == 1) {
+        init_block_header(new_malloc_header, required_size);
+    }
 
     mark_allocated(new_malloc_header);
 

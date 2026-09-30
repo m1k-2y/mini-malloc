@@ -3,3 +3,4 @@
 void *allocate_heap_region(size_t size);
 extern void *heap_start;
 extern void *heap_end;
+extern size_t heap_size;

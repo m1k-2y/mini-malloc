@@ -15,3 +15,5 @@ void init_block_header(void *header_start, size_t block_size);
 int is_allocated(BlockHeader *header);
 
 size_t get_block_size(BlockHeader *header);
+
+#endif
