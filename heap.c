@@ -2,6 +2,7 @@
 #include <stddef.h>
 
 void *heap_start;
+void *heap_end;
 
 void *allocate_heap_region(size_t size) {
     
@@ -19,6 +20,7 @@ void *allocate_heap_region(size_t size) {
     }
 
     heap_start = p;
+    heap_end = (char *)p + size;
     
     return p;
 }

@@ -16,3 +16,13 @@ void init_block_header(void *header_start, size_t block_size) {
 
     header -> size_and_flag = block_size;
 }
+
+int is_allocated(BlockHeader *header) {
+
+    return header -> size_and_flag & 1;
+}
+
+size_t get_block_size(BlockHeader *header) {
+
+    return header -> size_and_flag & ~1;
+}
