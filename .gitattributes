@@ -1,0 +1,5 @@
+# The web visualizer is supporting UI, not the core project language.
+visualizer/** linguist-detectable=false
+
+# JavaScript glue for the WebAssembly build.
+wasm/*.mjs linguist-detectable=false
