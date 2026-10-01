@@ -9,6 +9,9 @@ function describeBlock(block) {
 }
 
 async function requestAPI(path, body) {
+  if (globalThis.miniMallocBackend) {
+    return (await globalThis.miniMallocBackend).request(path, body);
+  }
   const response = await fetch(path, {
     method: body === undefined ? "GET" : "POST",
     headers: body === undefined ? {} : { "Content-Type": "application/json" },
@@ -191,7 +194,7 @@ async function mountVisualizer() {
       } else if (result.ok && !allocator.active) {
         configurationMessage("Heap이 해제되었습니다. Initialize heap으로 새 heap을 만드세요.");
       }
-      $("connection-status").textContent = "● REAL C ALLOCATOR";
+      $("connection-status").textContent = allocator.transport === "wasm" ? "● REAL C / WASM" : "● REAL C ALLOCATOR";
       const changes = path === "/api/command" && result.ok ? changedBlocks(before, allocator.blocks) : [];
       if (resetLog && result.ok) {
         selectedOffset = 0;
@@ -206,7 +209,10 @@ async function mountVisualizer() {
     } catch (error) {
       $("connection-status").textContent = "● DISCONNECTED";
       configurationMessage("서버 연결 오류입니다. 현재 heap 상태를 확인하려면 연결 복구 후 새로고침하세요.", true);
-      appendLog(`연결 오류: ${error.message} · python3 visualizer/server.py 실행 후 새로고침하세요. 마지막 표시 상태는 최신이 아닐 수 있습니다. 명령을 자동 재전송하지 않습니다.`, "error");
+      const recovery = globalThis.miniMallocBackend
+        ? "WASM 파일을 불러오지 못했습니다. 페이지를 새로고침하세요."
+        : "python3 visualizer/server.py 실행 후 새로고침하세요.";
+      appendLog(`연결 오류: ${error.message} · ${recovery} 마지막 표시 상태는 최신이 아닐 수 있습니다. 명령을 자동 재전송하지 않습니다.`, "error");
     } finally {
       setBusy(false);
     }

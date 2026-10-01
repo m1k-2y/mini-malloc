@@ -105,3 +105,7 @@ node visualizer/app.test.js http://127.0.0.1:8000
 ```
 
 기존 `main.c` REPL과 allocator core는 변경하지 않았습니다.
+
+## GitHub Pages / WASM 모드
+
+Python 서버 없이 기존 UI를 실행하는 정적 빌드는 `./scripts/build_wasm.sh`로 생성합니다. 결과는 Git에서 제외되는 `dist/`에 저장됩니다. 기존 로컬 Python 실행 방식은 그대로 유지됩니다. 빌드·설계·테스트·Pages 설정은 [wasm/README.md](../wasm/README.md)를 참고하세요.

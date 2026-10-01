@@ -1,0 +1,70 @@
+name: Build and deploy WASM visualizer
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check out official Emscripten SDK
+        uses: actions/checkout@v6
+        with:
+          repository: emscripten-core/emsdk
+          ref: e566f7bdcc7735f44037911c24b87a58a3c93145
+          path: build/emsdk
+          persist-credentials: false
+      - name: Install Emscripten 4.0.20
+        run: |
+          ./build/emsdk/emsdk install 4.0.20
+          ./build/emsdk/emsdk activate 4.0.20
+          echo "$GITHUB_WORKSPACE/build/emsdk/upstream/emscripten" >> "$GITHUB_PATH"
+      - name: Native regression tests
+        run: ./scripts/test_native.sh
+      - name: Python bridge regression tests
+        run: python3 visualizer/server_test.py
+      - name: Build Pages site
+        run: ./scripts/build_wasm.sh
+      - name: WASM regression tests
+        run: node wasm/wasm_test.mjs
+      - name: Install test-only browser
+        run: |
+          npm install --prefix "$RUNNER_TEMP/wasm-browser" playwright@1.56.1
+          "$RUNNER_TEMP/wasm-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Test static site in Chromium
+        env:
+          PLAYWRIGHT_MODULE: ${{ runner.temp }}/wasm-browser/node_modules/playwright
+        run: node wasm/browser_test.mjs
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
