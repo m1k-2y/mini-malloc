@@ -31,3 +31,8 @@ size_t get_block_size(BlockHeader *header) {
 
     return header -> size_and_flag & ~1;
 }
+
+void add_block_size(BlockHeader *header, size_t next_block_size) {
+
+    header -> size_and_flag += next_block_size;
+}
