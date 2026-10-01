@@ -18,6 +18,6 @@ int is_allocated(BlockHeader *header);
 
 size_t get_block_size(BlockHeader *header);
 
-void add_block_size(BlockHeader *header, size_t next_block_size)
+void add_block_size(BlockHeader *header, size_t next_block_size);
 
 #endif
