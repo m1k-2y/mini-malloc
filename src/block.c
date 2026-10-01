@@ -1,9 +1,5 @@
 #include <stddef.h>
-
-typedef struct {
-    size_t size_and_flag;
-    size_t padding;
-} BlockHeader;
+#include "block.h"
 
 void mark_allocated(BlockHeader *header) {
 
