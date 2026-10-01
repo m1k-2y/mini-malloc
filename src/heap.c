@@ -33,8 +33,6 @@ void destroy_heap(void) {
         return;
     }
 
-    munmap(heap_start, heap_size);
-
     if (munmap(heap_start, heap_size) == -1) {
         return;
     }
