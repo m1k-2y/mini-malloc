@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini Malloc Visualizer</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main>
+    <header class="topbar">
+      <div><p class="eyebrow">MEMORY LAB / 01</p><h1>Mini Malloc Visualizer<span class="cursor">_</span></h1></div>
+      <span class="badge" id="connection-status" role="status">● CONNECTING</span>
+    </header>
+    <p class="intro">명령 한 줄로 살펴보는 메모리 할당과 해제. 로컬 C allocator의 실제 heap을 살펴봅니다.</p>
+
+    <section class="panel heap-configuration" aria-labelledby="configuration-title">
+      <div class="panel-heading"><h2 id="configuration-title">Heap configuration</h2><span>16 B alignment</span></div>
+      <div class="configuration-body">
+        <form id="heap-form" class="heap-form" novalidate>
+          <label for="heap-size-input">Heap size</label>
+          <div class="heap-size-field"><input id="heap-size-input" type="number" min="1" max="1048576" step="1" value="256" required aria-describedby="heap-config-help heap-config-status"><span>B</span></div>
+          <button id="initialize-heap" type="submit">Initialize heap</button>
+        </form>
+        <div class="heap-presets" aria-label="Heap size presets">
+          <span>PRESETS</span>
+          <button type="button" data-heap-size="128">128 B</button>
+          <button type="button" data-heap-size="256">256 B</button>
+          <button type="button" data-heap-size="512">512 B</button>
+          <button type="button" data-heap-size="1024">1024 B</button>
+        </div>
+        <p id="heap-config-help" class="note">1–1,048,576 B 정수 · C alignment()로 16 B 단위 정렬 (최소 header 16 B). 재초기화하면 기존 할당과 모든 변수·포인터가 사라집니다. Preset은 입력값만 변경합니다.</p>
+        <p id="heap-config-status" class="configuration-status" role="status">현재 heap 상태를 확인하는 중입니다.</p>
+      </div>
+    </section>
+
+    <section class="stats" aria-label="Heap statistics">
+      <div><span>HEAP SIZE</span><strong id="heap-size">—</strong></div>
+      <div><span><i class="dot used-dot"></i> USED BYTES</span><strong id="used-bytes">—</strong><small class="stat-hint">Allocated blocks · header 포함</small></div>
+      <div><span><i class="dot free-dot"></i> FREE BYTES</span><strong id="free-bytes">—</strong></div>
+      <div><span>BLOCKS</span><strong id="block-count">—</strong></div>
+    </section>
+
+    <div class="secondary-stats" aria-label="메모리 사용 세부 통계">
+      <span>Requested payload <strong id="requested-bytes">—</strong></span>
+      <span>Header overhead <strong id="header-bytes">—</strong> <small id="header-breakdown"></small></span>
+      <span>Internal fragmentation <strong id="fragmentation-bytes">—</strong></span>
+    </div>
+    <p class="note accounting" id="accounting"></p>
+
+    <section class="panel" aria-labelledby="memory-title">
+      <div class="panel-heading"><h2 id="memory-title">01 / HEAP MEMORY</h2><span id="usage">Connecting…</span></div>
+      <div class="memory-body">
+        <div class="memory-label"><span>heap_start + 0</span><span id="heap-end">—</span></div>
+        <div class="memory-scroll"><div id="heap-map" class="heap-map" aria-label="Heap blocks"></div></div>
+        <div class="legend"><span><i class="dot used-dot"></i> Allocated</span><span><i class="dot free-dot"></i> Free</span><span><i class="dot header-dot"></i> Header · USED/FREE 모두 16 B</span><span>너비 = byte 비율 · block 선택으로 상세 확인</span></div>
+        <p class="note">Used / Free는 header를 포함한 block 크기입니다. 주소는 실제 heap_start 기준 상대 offset이며, 끝 offset은 exclusive입니다. Internal fragmentation은 정렬 padding + split하지 않은 잔여 공간입니다.</p>
+      </div>
+      <div id="block-detail" class="block-detail" aria-live="polite"></div>
+      <div class="table-scroll"><table>
+        <caption class="sr-only">현재 heap의 모든 block 상세 정보</caption>
+        <thead><tr><th>VARIABLE</th><th>STATE</th><th>OFFSET [START, END)</th><th>REQUESTED</th><th>ALIGNED PAYLOAD</th><th>HEADER</th><th>TOTAL BLOCK</th><th>INTERNAL FRAG.</th></tr></thead>
+        <tbody id="block-table"></tbody>
+      </table></div>
+    </section>
+
+    <section class="panel terminal" aria-labelledby="terminal-title">
+      <div class="panel-heading"><h2 id="terminal-title">02 / COMMAND TERMINAL</h2><button id="reset" type="button">Reset heap ↺</button></div>
+      <div id="terminal-log" class="terminal-log" role="log" aria-live="polite" aria-label="명령 실행 기록"></div>
+      <form id="command-form" class="command-form" autocomplete="off">
+        <label for="command"><span aria-hidden="true">❯</span><span class="sr-only">C-like command</span></label>
+        <input id="command" name="command" spellcheck="false" maxlength="255" placeholder="void *a = malloc(32);" required aria-describedby="command-help">
+        <button type="submit">Run ↵</button>
+      </form>
+      <div class="examples" id="command-help"><span>TRY</span><button type="button" data-command="void *a = malloc(32);">malloc a</button><button type="button" data-command="void *b = malloc(16);">malloc b</button><button type="button" data-command="free(a);">free a</button><button type="button" data-command="free(b);">free b</button><button type="button" data-command="void *x = malloc(17);">malloc(17)</button><span>클릭하여 입력 · Enter로 실행</span></div>
+    </section>
+    <footer><span>16 B HEADER · 16 B ALIGNMENT · FIRST-FIT</span><span>SPLIT ≥ 32 B · ADJACENT COALESCING</span></footer>
+  </main>
+</body>
+</html>
