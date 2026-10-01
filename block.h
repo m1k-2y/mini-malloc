@@ -10,6 +10,8 @@ typedef struct {
 
 void mark_allocated(BlockHeader *header);
 
+void mark_free(BlockHeader *header)
+
 void init_block_header(void *header_start, size_t block_size);
 
 int is_allocated(BlockHeader *header);

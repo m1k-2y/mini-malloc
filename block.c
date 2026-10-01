@@ -10,6 +10,11 @@ void mark_allocated(BlockHeader *header) {
     header -> size_and_flag |= 1;
 }
 
+void mark_free(BlockHeader *header) {
+
+    header -> size_and_flag &= ~1;
+}
+
 void init_block_header(void *header_start, size_t block_size) {
 
     BlockHeader *header = (BlockHeader *) header_start;

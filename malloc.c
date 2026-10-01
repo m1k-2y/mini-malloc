@@ -56,6 +56,10 @@ size_t required_block_size(size_t payload_size) {
 
 void *mini_malloc(size_t size) {
 
+    if (size == 0) {
+        return NULL;
+    }
+
     size_t required_size = required_block_size(size);
 
     BlockHeader *new_malloc_header = find_free_block(required_size);
