@@ -38,12 +38,22 @@ BlockHeader *find_free_block(size_t required_size) {
     BlockHeader *header = heap_start;
 
     while ((char *)header < (char *)heap_end) {
-        if (is_allocated(header) == 0 && get_block_size(header) >= required_size) {
+        size_t block_size = get_block_size(header);
+
+        if (block_size == 0) {
+            return NULL;
+        }
+
+        if ((char *)header + block_size > (char *)heap_end) {
+            return NULL;
+        }
+
+        if (is_allocated(header) == 0 && block_size >= required_size) {
             return header;
         }
 
         else {
-            header = (BlockHeader *)((char *)header + get_block_size(header));
+            header = (BlockHeader *)((char *)header + block_size);
         }
     }
 

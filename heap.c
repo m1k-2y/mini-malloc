@@ -28,7 +28,16 @@ void *allocate_heap_region(size_t size) {
 }
 
 void destroy_heap(void) {
+
+    if (heap_start == NULL) {
+        return;
+    }
+
     munmap(heap_start, heap_size);
+
+    if (munmap(heap_start, heap_size) == -1) {
+        return;
+    }
 
     heap_start = NULL;
     heap_end = NULL;
